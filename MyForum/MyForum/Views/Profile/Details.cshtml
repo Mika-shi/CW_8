@@ -1,0 +1,30 @@
+@model MyForum.Models.User
+
+@{
+    ViewData["Title"] = "Профиль";
+}
+
+<div class="container mt-5">
+    <div class="mx-auto" style="max-width: 500px;">
+
+        <h2 class="mb-4">Профиль</h2>
+
+        @if (!string.IsNullOrEmpty(Model.AvatarPath))
+        {
+            <div class="mb-3">
+                <img src="@Model.AvatarPath" style="width:120px;height:120px;object-fit:cover;border-radius:50%;" />
+            </div>
+        }
+
+        <p><strong>Имя пользователя:</strong> @Model.UserName</p>
+        <p><strong>Email:</strong> @Model.Email</p>
+        <p><strong>Дата рождения:</strong> @Model.BirthDate.ToString("dd.MM.yyyy")</p>
+        <p><strong>Сообщений:</strong> @Model.MessagesCount</p>
+
+        @if (ViewBag.IsMyProfile == true)
+        {
+            <a asp-controller="Profile" asp-action="Edit" class="btn btn-primary">Редактировать профиль</a>
+        }
+
+    </div>
+</div>
