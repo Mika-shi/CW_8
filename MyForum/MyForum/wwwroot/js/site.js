@@ -1,4 +1,31 @@
-﻿$(document).ready(function () {
+﻿function loadReplies(page) {
+    let container = $('#repliesContainer');
+    let topicId = container.data('topic-id');
+
+    $.ajax({
+        url: '/Topic/GetReplies',
+        type: 'GET',
+        data: {
+            topicId: topicId,
+            page: page
+        },
+        success: function (html) {
+            container.html(html);
+        }
+    });
+}
+
+$(document).ready(function () {
+
+    if ($('#repliesContainer').length) {
+        loadReplies(1);
+    }
+
+    $(document).on('click', '.reply-page-link', function () {
+        let page = $(this).data('page');
+
+        loadReplies(page);
+    });
 
     $('.password-toggle').click(function () {
         let button = $(this);
@@ -98,60 +125,15 @@
                     return;
                 }
 
-                let avatar = '';
-
-                if (result.avatarPath) {
-                    avatar = `
-                    <img src="${result.avatarPath}" style="width:50px;height:50px;object-fit:cover;border-radius:50%;flex-shrink:0;">
-                `;
-                } else {
-                    let firstLetter = result.userName
-                        ? result.userName.charAt(0).toUpperCase()
-                        : '?';
-
-                    avatar = `
-                    <div class="d-flex align-items-center justify-content-center bg-secondary text-white"
-                         style="width:50px;height:50px;border-radius:50%;font-weight:bold;flex-shrink:0;">
-                        ${firstLetter}
-                    </div>
-                `;
-                }
-
-                let html = `
-                <div class="card mb-3">
-                    <div class="card-body">
-                        <div class="d-flex gap-3">
-
-                            ${avatar}
-
-                            <div class="flex-grow-1">
-                                <div class="d-flex justify-content-between mb-2">
-                                    <a href="/Profile/Details/${result.userId}" class="text-decoration-none fw-bold">
-                                        ${result.userName}
-                                    </a>
-
-                                    <small class="text-muted">
-                                        ${result.createdOn}
-                                    </small>
-                                </div>
-
-                                <div>
-                                    ${result.text}
-                                </div>
-                            </div>
-
-                        </div>
-                    </div>
-                </div>
-            `;
-
-                $('#replies').append(html);
-
                 $('#replyText').val('');
 
-                $('html, body').animate({
-                    scrollTop: $('#replies').prop('scrollHeight') + $('#replies').offset().top
-                }, 500);
+                loadReplies(result.totalPages);
+
+                setTimeout(function () {
+                    $('html, body').animate({
+                        scrollTop: $('#repliesContainer').offset().top + $('#repliesContainer').height()
+                    }, 500);
+                }, 200);
             }
         });
     });

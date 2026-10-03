@@ -1,0 +1,81 @@
+﻿@model List<MyForum.Models.Reply>
+
+@if (Model.Count == 0)
+{
+    <div class="alert alert-light border">
+        Пока нет ответов.
+    </div>
+}
+else
+{
+    @foreach (var reply in Model)
+    {
+        <div class="card mb-3">
+            <div class="card-body">
+
+                <div class="d-flex gap-3">
+
+                    @if (!string.IsNullOrEmpty(reply.User?.AvatarPath))
+                    {
+                        <img src="@reply.User.AvatarPath" style="width:50px;height:50px;object-fit:cover;border-radius:50%;flex-shrink:0;" />
+                    }
+                    else
+                    {
+                        <div class="d-flex align-items-center justify-content-center bg-secondary text-white"
+                             style="width:50px;height:50px;border-radius:50%;font-weight:bold;flex-shrink:0;">
+                            @reply.User?.UserName?.Substring(0, 1).ToUpper()
+                        </div>
+                    }
+
+                    <div class="flex-grow-1">
+
+                        <div class="d-flex justify-content-between mb-2">
+                            <a asp-controller="Profile" asp-action="Details" asp-route-id="@reply.UserId" class="text-decoration-none fw-bold">
+                                @reply.User?.UserName
+                            </a>
+
+                            <small class="text-muted">
+                                @reply.CreatedOn.ToString("dd.MM.yyyy HH:mm")
+                            </small>
+                        </div>
+
+                        <div>@reply.Text</div>
+
+                    </div>
+
+                </div>
+
+            </div>
+        </div>
+    }
+}
+
+@if (ViewBag.TotalPages > 1)
+{
+    <nav class="mt-4">
+        <ul class="pagination justify-content-center">
+
+            @if (ViewBag.CurrentPage > 1)
+            {
+                <li class="page-item">
+                    <button type="button" class="page-link reply-page-link" data-page="@(ViewBag.CurrentPage - 1)">Назад</button>
+                </li>
+            }
+
+            @for (int i = 1; i <= ViewBag.TotalPages; i++)
+            {
+                <li class="page-item @(i == ViewBag.CurrentPage ? "active" : "")">
+                    <button type="button" class="page-link reply-page-link" data-page="@i">@i</button>
+                </li>
+            }
+
+            @if (ViewBag.CurrentPage < ViewBag.TotalPages)
+            {
+                <li class="page-item">
+                    <button type="button" class="page-link reply-page-link" data-page="@(ViewBag.CurrentPage + 1)">Вперёд</button>
+                </li>
+            }
+
+        </ul>
+    </nav>
+}

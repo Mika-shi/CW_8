@@ -132,6 +132,13 @@ public class TopicController : Controller
         user.MessagesCount++;
 
         await _context.SaveChangesAsync();
+        
+        int pageSize = 5;
+
+        int totalReplies = await _context.Replies
+            .CountAsync(reply => reply.TopicId == topicId);
+
+        int totalPages = (int)Math.Ceiling(totalReplies / (double)pageSize);
 
         return Json(new
         {
@@ -142,7 +149,43 @@ public class TopicController : Controller
             userId = user.Id,
             userName = user.UserName,
             avatarPath = user.AvatarPath,
-            messagesCount = user.MessagesCount
+            messagesCount = user.MessagesCount,
+            totalPages = totalPages
         });
+    }
+    
+    [HttpGet]
+    public async Task<IActionResult> GetReplies(int topicId, int page = 1)
+    {
+        int pageSize = 5;
+
+        int totalReplies = await _context.Replies
+            .CountAsync(reply => reply.TopicId == topicId);
+
+        int totalPages = (int)Math.Ceiling(totalReplies / (double)pageSize);
+
+        if (page < 1)
+        {
+            page = 1;
+        }
+
+        if (page > totalPages && totalPages > 0)
+        {
+            page = totalPages;
+        }
+
+        var replies = await _context.Replies
+            .Where(reply => reply.TopicId == topicId)
+            .Include(reply => reply.User)
+            .OrderBy(reply => reply.CreatedOn)
+            .Skip((page - 1) * pageSize)
+            .Take(pageSize)
+            .ToListAsync();
+
+        ViewBag.TopicId = topicId;
+        ViewBag.CurrentPage = page;
+        ViewBag.TotalPages = totalPages;
+
+        return PartialView("Replies", replies);
     }
 }
