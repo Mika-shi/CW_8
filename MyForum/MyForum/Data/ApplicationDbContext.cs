@@ -1,8 +1,10 @@
 ﻿using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
+using MyForum.Models;
 
 namespace MyForum.Data;
 
-public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options) : IdentityDbContext(options)
+public class ApplicationDbContext : IdentityDbContext<User>
 {
+    public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options) : base(options) {}
 }
