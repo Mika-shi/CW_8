@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using MyForum.Data;
 using MyForum.Models;
 using MyForum.ViewModels;
@@ -53,5 +54,22 @@ public class TopicController : Controller
         await _context.SaveChangesAsync();
 
         return RedirectToAction("Index", "Home");
+    }
+    
+    [HttpGet]
+    public async Task<IActionResult> Details(int id)
+    {
+        Topic? topic = await _context.Topics
+            .Include(topic => topic.User)
+            .Include(topic => topic.Replies)
+            .ThenInclude(reply => reply.User)
+            .FirstOrDefaultAsync(topic => topic.Id == id);
+
+        if (topic == null)
+        {
+            return NotFound();
+        }
+
+        return View(topic);
     }
 }
