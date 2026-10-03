@@ -52,17 +52,67 @@
 
         @if (User.Identity != null && User.Identity.IsAuthenticated)
         {
-            <button type="button" class="btn btn-primary">Ответить</button>
+            <button type="button" id="scrollToReplyButton" class="btn btn-primary">Ответить</button>
         }
     </div>
 
     <div id="replies">
-        @if (Model.Replies.Count == 0)
+
+        @foreach (var reply in Model.Replies.OrderBy(reply => reply.CreatedOn))
         {
-            <div class="alert alert-light border">
-                Пока нет ответов.
+            <div class="card mb-3">
+                <div class="card-body">
+
+                    <div class="d-flex gap-3">
+
+                        @if (!string.IsNullOrEmpty(reply.User?.AvatarPath))
+                        {
+                            <img src="@reply.User.AvatarPath" style="width:50px;height:50px;object-fit:cover;border-radius:50%;flex-shrink:0;" />
+                        }
+                        else
+                        {
+                            <div class="d-flex align-items-center justify-content-center bg-secondary text-white"
+                                 style="width:50px;height:50px;border-radius:50%;font-weight:bold;flex-shrink:0;">
+                                @reply.User?.UserName?.Substring(0, 1).ToUpper()
+                            </div>
+                        }
+
+                        <div class="flex-grow-1">
+
+                            <div class="d-flex justify-content-between mb-2">
+                                <a asp-controller="Profile" asp-action="Details" asp-route-id="@reply.UserId" class="text-decoration-none fw-bold">
+                                    @reply.User?.UserName
+                                </a>
+
+                                <small class="text-muted">
+                                    @reply.CreatedOn.ToString("dd.MM.yyyy HH:mm")
+                                </small>
+                            </div>
+
+                            <div>
+                                @reply.Text
+                            </div>
+                            
+                        </div>
+                    </div>
+                </div>
             </div>
         }
     </div>
+    @if (User.Identity != null && User.Identity.IsAuthenticated)
+    {
+        <div id="replyForm" class="mt-4">
+
+            <h5 class="mb-3">Ваш ответ</h5>
+
+            <textarea id="replyText" class="form-control mb-2" rows="5" placeholder="Введите ответ"></textarea>
+
+            <div id="replyError" class="text-danger mb-2"></div>
+
+            <button type="button" id="sendReplyButton" class="btn btn-primary" data-topic-id="@Model.Id">
+                Отправить
+            </button>
+        </div>
+    }
 
 </div>

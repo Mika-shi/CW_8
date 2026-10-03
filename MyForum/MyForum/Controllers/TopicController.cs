@@ -72,4 +72,77 @@ public class TopicController : Controller
 
         return View(topic);
     }
+    
+    [Authorize]
+    [HttpPost]
+    public async Task<IActionResult> AddReply(int topicId, string text)
+    {
+        if (string.IsNullOrWhiteSpace(text))
+        {
+            return Json(new
+            {
+                success = false,
+                error = "Введите текст ответа"
+            });
+        }
+
+        Topic? topic = await _context.Topics.FindAsync(topicId);
+
+        if (topic == null)
+        {
+            return Json(new
+            {
+                success = false,
+                error = "Тема не найдена"
+            });
+        }
+
+        string? userId = _userManager.GetUserId(User);
+
+        if (userId == null)
+        {
+            return Json(new
+            {
+                success = false,
+                error = "Пользователь не авторизован"
+            });
+        }
+
+        User? user = await _userManager.FindByIdAsync(userId);
+
+        if (user == null)
+        {
+            return Json(new
+            {
+                success = false,
+                error = "Пользователь не найден"
+            });
+        }
+
+        Reply reply = new Reply
+        {
+            Text = text,
+            CreatedOn = DateTime.Now,
+            TopicId = topicId,
+            UserId = userId
+        };
+
+        _context.Replies.Add(reply);
+
+        user.MessagesCount++;
+
+        await _context.SaveChangesAsync();
+
+        return Json(new
+        {
+            success = true,
+            id = reply.Id,
+            text = reply.Text,
+            createdOn = reply.CreatedOn.ToString("dd.MM.yyyy HH:mm"),
+            userId = user.Id,
+            userName = user.UserName,
+            avatarPath = user.AvatarPath,
+            messagesCount = user.MessagesCount
+        });
+    }
 }
